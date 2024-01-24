@@ -17,7 +17,7 @@ export async function loadAndSplitChunks({
     chunkSize,
     chunkOverlap
 }) {
-    const loader = new PDFLoader("./files/drylab.pdf");
+    const loader = new PDFLoader("./files/Doc1.pdf");
 
     const rawCS229Docs = await loader.load();
 
@@ -37,7 +37,7 @@ export async function initializeVectorstoreWithDocuments({
         modelName: "embedding-001", // 768 dimensions
         taskType: TaskType.RETRIEVAL_DOCUMENT,
         title: "Retrieval Document",
-        apiKey: google_api_key
+        apiKey: process.env.GOOGLE_API_KEY
     });;
     const vectorstore = new MemoryVectorStore(embeddings);
     await vectorstore.addDocuments(documents);
@@ -71,7 +71,7 @@ export function createRephraseQuestionChain() {
         new ChatGoogleGenerativeAI({
             modelName: "gemini-pro",
             maxOutputTokens: 2048,
-            apiKey: google_api_key
+            apiKey: process.env.GOOGLE_API_KEY
         }),
         new StringOutputParser(),
     ]);
@@ -136,7 +136,7 @@ const conversationalRetrievalChain = RunnableSequence.from([
     new ChatGoogleGenerativeAI({
         modelName: "gemini-pro",
         maxOutputTokens: 2048,
-        apiKey: google_api_key
+        apiKey: process.env.GOOGLE_API_KEY
     }),
 ]);
 
@@ -170,7 +170,7 @@ app.use(express.json())
 app.post('/', async (req, res) => {
     try {
         const stream = await finalRetrievalChain.stream({
-            question: "What is machine learning?"
+            question: "What is the basic idea behind a reinforcement learning algorithm?"
         }, { configurable: { sessionId: "123" } 
         });
         
@@ -191,18 +191,18 @@ app.listen(port, () => {
     console.log(`Listening on port ${port}`);
 })
 
-// const response = await fetch(`http://localhost:${port}`, {
-//     method: "POST",
-//     headers: {
-//         "content-type": "application/json",
-//     },
-//     body: JSON.stringify({
-//         question: "What are the prerequisites for this course?",
-//         sessionId: "1", // Should randomly generate/assign
-//     })
-// });
+const response = await fetch(`http://localhost:${port}`, {
+    method: "POST",
+    headers: {
+        "content-type": "application/json",
+    },
+    body: JSON.stringify({
+        question: "What are the prerequisites for this course?",
+        sessionId: "1", // Should randomly generate/assign
+    })
+});
 
-// console.log(response)
+console.log(response)
 
 
 // const finalRetrievalChain = new RunnableWithMessageHistory({
